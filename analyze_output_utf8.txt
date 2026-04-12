@@ -1,0 +1,87 @@
+﻿Analyzing FitDev...                                             
+
+warning - Unused import: 'package:path_provider/path_provider.dart' - lib\main.dart:4:8 - unused_import
+warning - Unused import: '../models/coding_model.dart' - lib\providers\data_providers.dart:5:8 - unused_import
+warning - Unused import: '../models/meal_model.dart' - lib\providers\data_providers.dart:6:8 - unused_import
+   info - The local variable '_waterProgressKey' starts with an underscore - lib\providers\data_providers.dart:304:10 - no_leading_underscores_for_local_identifiers
+   info - The local variable '_workoutProgressKey' starts with an underscore - lib\providers\data_providers.dart:309:10 - no_leading_underscores_for_local_identifiers
+   info - The local variable '_workoutCalendarIncludeKey' starts with an underscore - lib\providers\data_providers.dart:314:10 - no_leading_underscores_for_local_identifiers
+   info - Unnecessary braces in a string interpolation - lib\screens\dashboard_screen.dart:36:20 - unnecessary_brace_in_string_interps
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\dashboard_screen.dart:100:41 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\dashboard_screen.dart:158:41 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\dashboard_screen.dart:205:46 - deprecated_member_use
+   info - Unnecessary braces in a string interpolation - lib\screens\dashboard_screen.dart:233:22 - unnecessary_brace_in_string_interps
+warning - The declaration '_buildOverviewCard' isn't referenced - lib\screens\dashboard_screen.dart:261:10 - unused_element
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\dashboard_screen.dart:274:35 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\profile_screen.dart:37:48 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\profile_screen.dart:61:49 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\progress_screen.dart:99:41 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\progress_screen.dart:213:34 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\progress_screen.dart:316:35 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\todo_screen.dart:53:47 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\workout_screen.dart:47:47 - deprecated_member_use
+   info - 'background' is deprecated and shouldn't be used. Use surface instead. This feature was deprecated after v3.18.0-0.1.pre - lib\utils\app_theme.dart:22:9 - deprecated_member_use
+   info - 'onBackground' is deprecated and shouldn't be used. Use onSurface instead. This feature was deprecated after v3.18.0-0.1.pre - lib\utils\app_theme.dart:27:9 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\utils\app_theme.dart:63:42 - deprecated_member_use
+   info - The imported package 'flutter_local_notifications_linux' isn't a dependency of the importing package - tmp_plugin.dart:4:8 - depend_on_referenced_packages
+   info - The imported package 'flutter_local_notifications_platform_interface' isn't a dependency of the importing package - tmp_plugin.dart:5:8 - depend_on_referenced_packages
+  error - Target of URI doesn't exist: 'initialization_settings.dart' - tmp_plugin.dart:8:8 - uri_does_not_exist
+  error - Target of URI doesn't exist: 'notification_details.dart' - tmp_plugin.dart:9:8 - uri_does_not_exist
+  error - Target of URI doesn't exist: 'platform_flutter_local_notifications.dart' - tmp_plugin.dart:10:8 - uri_does_not_exist
+  error - Target of URI doesn't exist: 'platform_specifics/ios/enums.dart' - tmp_plugin.dart:11:8 - uri_does_not_exist
+  error - Target of URI doesn't exist: 'types.dart' - tmp_plugin.dart:12:8 - uri_does_not_exist
+  error - The method 'AndroidFlutterLocalNotificationsPlugin' isn't defined for the type 'FlutterLocalNotificationsPlugin' - tmp_plugin.dart:33:11 - undefined_method
+  error - The method 'IOSFlutterLocalNotificationsPlugin' isn't defined for the type 'FlutterLocalNotificationsPlugin' - tmp_plugin.dart:36:11 - undefined_method
+  error - The method 'MacOSFlutterLocalNotificationsPlugin' isn't defined for the type 'FlutterLocalNotificationsPlugin' - tmp_plugin.dart:39:11 - undefined_method
+  error - Undefined name 'AndroidFlutterLocalNotificationsPlugin' - tmp_plugin.dart:69:14 - undefined_identifier
+  error - The name 'AndroidFlutterLocalNotificationsPlugin' isn't defined, so it can't be used in an 'is' expression - tmp_plugin.dart:71:16 - type_test_with_undefined_name
+  error - Undefined name 'IOSFlutterLocalNotificationsPlugin' - tmp_plugin.dart:74:14 - undefined_identifier
+  error - The name 'IOSFlutterLocalNotificationsPlugin' isn't defined, so it can't be used in an 'is' expression - tmp_plugin.dart:76:16 - type_test_with_undefined_name
+  error - Undefined name 'MacOSFlutterLocalNotificationsPlugin' - tmp_plugin.dart:79:14 - undefined_identifier
+  error - The name 'MacOSFlutterLocalNotificationsPlugin' isn't defined, so it can't be used in an 'is' expression - tmp_plugin.dart:81:16 - type_test_with_undefined_name
+  error - Undefined class 'InitializationSettings' - tmp_plugin.dart:120:5 - undefined_class
+  error - The name 'AndroidFlutterLocalNotificationsPlugin' isn't a type, so it can't be used as a type argument - tmp_plugin.dart:136:15 - non_type_as_type_argument
+  error - The name 'IOSFlutterLocalNotificationsPlugin' isn't a type, so it can't be used as a type argument - tmp_plugin.dart:150:15 - non_type_as_type_argument
+  error - The name 'MacOSFlutterLocalNotificationsPlugin' isn't a type, so it can't be used as a type argument - tmp_plugin.dart:164:15 - non_type_as_type_argument
+  error - The named parameter 'settings' is required, but there's no corresponding argument - tmp_plugin.dart:177:13 - missing_required_argument
+  error - Too many positional arguments: 0 expected, but 1 found - tmp_plugin.dart:178:9 - extra_positional_arguments_could_be_named
+  error - The name 'AndroidFlutterLocalNotificationsPlugin' isn't a type, so it can't be used as a type argument - tmp_plugin.dart:204:15 - non_type_as_type_argument
+  error - The name 'IOSFlutterLocalNotificationsPlugin' isn't a type, so it can't be used as a type argument - tmp_plugin.dart:208:15 - non_type_as_type_argument
+  error - The name 'MacOSFlutterLocalNotificationsPlugin' isn't a type, so it can't be used as a type argument - tmp_plugin.dart:212:15 - non_type_as_type_argument
+  error - Undefined class 'NotificationDetails' - tmp_plugin.dart:227:5 - undefined_class
+  error - The name 'AndroidFlutterLocalNotificationsPlugin' isn't a type, so it can't be used as a type argument - tmp_plugin.dart:235:15 - non_type_as_type_argument
+  error - The name 'IOSFlutterLocalNotificationsPlugin' isn't a type, so it can't be used as a type argument - tmp_plugin.dart:241:15 - non_type_as_type_argument
+  error - The name 'MacOSFlutterLocalNotificationsPlugin' isn't a type, so it can't be used as a type argument - tmp_plugin.dart:246:15 - non_type_as_type_argument
+  error - The named parameter 'id' is required, but there's no corresponding argument - tmp_plugin.dart:253:13 - missing_required_argument
+  error - Too many positional arguments: 0 expected, but 3 found - tmp_plugin.dart:253:18 - extra_positional_arguments_could_be_named
+  error - The named parameter 'id' is required, but there's no corresponding argument - tmp_plugin.dart:257:56 - missing_required_argument
+  error - Too many positional arguments: 0 expected, but 3 found - tmp_plugin.dart:257:61 - extra_positional_arguments_could_be_named
+  error - The name 'AndroidFlutterLocalNotificationsPlugin' isn't a type, so it can't be used as a type argument - tmp_plugin.dart:275:15 - non_type_as_type_argument
+  error - The named parameter 'id' is required, but there's no corresponding argument - tmp_plugin.dart:278:56 - missing_required_argument
+  error - Too many positional arguments: 0 expected, but 1 found - tmp_plugin.dart:278:63 - extra_positional_arguments_could_be_named
+  error - Undefined class 'NotificationDetails' - tmp_plugin.dart:302:5 - undefined_class
+  error - The name 'AndroidFlutterLocalNotificationsPlugin' isn't a type, so it can't be used as a type argument - tmp_plugin.dart:311:15 - non_type_as_type_argument
+  error - The name 'IOSFlutterLocalNotificationsPlugin' isn't a type, so it can't be used as a type argument - tmp_plugin.dart:316:15 - non_type_as_type_argument
+  error - Undefined class 'NotificationDetails' - tmp_plugin.dart:360:5 - undefined_class
+  error - Undefined class 'UILocalNotificationDateInterpretation' - tmp_plugin.dart:361:14 - undefined_class
+  error - Undefined class 'DateTimeComponents' - tmp_plugin.dart:365:5 - undefined_class
+  error - The name 'AndroidFlutterLocalNotificationsPlugin' isn't a type, so it can't be used as a type argument - tmp_plugin.dart:372:15 - non_type_as_type_argument
+  error - The name 'IOSFlutterLocalNotificationsPlugin' isn't a type, so it can't be used as a type argument - tmp_plugin.dart:380:15 - non_type_as_type_argument
+  error - The name 'MacOSFlutterLocalNotificationsPlugin' isn't a type, so it can't be used as a type argument - tmp_plugin.dart:389:15 - non_type_as_type_argument
+  error - Undefined class 'NotificationDetails' - tmp_plugin.dart:416:5 - undefined_class
+  error - The name 'AndroidFlutterLocalNotificationsPlugin' isn't a type, so it can't be used as a type argument - tmp_plugin.dart:425:15 - non_type_as_type_argument
+  error - The name 'IOSFlutterLocalNotificationsPlugin' isn't a type, so it can't be used as a type argument - tmp_plugin.dart:432:15 - non_type_as_type_argument
+  error - The name 'MacOSFlutterLocalNotificationsPlugin' isn't a type, so it can't be used as a type argument - tmp_plugin.dart:437:15 - non_type_as_type_argument
+  error - The named parameter 'id' is required, but there's no corresponding argument - tmp_plugin.dart:442:12 - missing_required_argument
+  error - The named parameter 'repeatInterval' is required, but there's no corresponding argument - tmp_plugin.dart:442:12 - missing_required_argument
+  error - Too many positional arguments: 0 expected, but 4 found - tmp_plugin.dart:442:29 - extra_positional_arguments_could_be_named
+  error - Undefined class 'Time' - tmp_plugin.dart:456:5 - undefined_class
+  error - Undefined class 'NotificationDetails' - tmp_plugin.dart:457:5 - undefined_class
+  error - The name 'AndroidFlutterLocalNotificationsPlugin' isn't a type, so it can't be used as a type argument - tmp_plugin.dart:465:15 - non_type_as_type_argument
+  error - The name 'IOSFlutterLocalNotificationsPlugin' isn't a type, so it can't be used as a type argument - tmp_plugin.dart:471:15 - non_type_as_type_argument
+  error - Undefined class 'Day' - tmp_plugin.dart:490:5 - undefined_class
+  error - Undefined class 'Time' - tmp_plugin.dart:491:5 - undefined_class
+  error - Undefined class 'NotificationDetails' - tmp_plugin.dart:492:5 - undefined_class
+  error - The name 'AndroidFlutterLocalNotificationsPlugin' isn't a type, so it can't be used as a type argument - tmp_plugin.dart:500:15 - non_type_as_type_argument
+  error - The name 'IOSFlutterLocalNotificationsPlugin' isn't a type, so it can't be used as a type argument - tmp_plugin.dart:506:15 - non_type_as_type_argument
+
