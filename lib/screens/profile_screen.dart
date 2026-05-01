@@ -4,26 +4,35 @@ import 'package:intl/intl.dart';
 import '../providers/data_providers.dart';
 import '../services/supabase_sync_service.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../utils/app_theme.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+
+final syncLoadingProvider = NotifierProvider<SyncLoadingNotifier, bool>(() {
+  return SyncLoadingNotifier();
+});
+
+class SyncLoadingNotifier extends Notifier<bool> {
+  @override
+  bool build() => false;
+
+  void setLoading(bool loading) {
+    state = loading;
+  }
+}
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final isSyncLoading = ref.watch(syncLoadingProvider);
     final profile = ref.watch(userProfileProvider);
     final authState = ref.watch(authStateProvider);
 
     if (profile == null) return const Center(child: CircularProgressIndicator());
 
-    final progressHistory = ref.watch(taskProgressProvider);
-    int streak = 0;
-    DateTime checkDate = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
-    if ((progressHistory[checkDate] ?? 0.0) > 0) streak++;
-    checkDate = checkDate.subtract(const Duration(days: 1));
-    while ((progressHistory[checkDate] ?? 0.0) > 0) {
-      streak++;
-      checkDate = checkDate.subtract(const Duration(days: 1));
-    }
+    final streak = ref.watch(streakProvider);
     final heightInMeters = profile.height / 100;
     final bmi = profile.weight / (heightInMeters * heightInMeters);
     String category = '';
@@ -144,7 +153,7 @@ class ProfileScreen extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: 24),
-            _buildCloudSyncCard(context, ref, authState.value?.session?.user),
+            _buildCloudSyncCard(context, ref, authState.value?.session?.user, isSyncLoading),
           ],
         ),
       ),
@@ -164,7 +173,7 @@ class ProfileScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildCloudSyncCard(BuildContext context, WidgetRef ref, User? user) {
+  Widget _buildCloudSyncCard(BuildContext context, WidgetRef ref, User? user, bool isSyncLoading) {
     final bool isLoggedIn = user != null;
 
     return Container(
@@ -192,70 +201,84 @@ class ProfileScreen extends ConsumerWidget {
           if (!isLoggedIn) ...[
             const Text('Sign in with Google to securely backup your data so you never lose it.', style: TextStyle(color: Colors.white70)),
             const SizedBox(height: 16),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white,
-                  foregroundColor: Colors.black,
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                ),
-                icon: const Icon(Icons.login),
-                label: const Text('Sign in with Google', style: TextStyle(fontWeight: FontWeight.bold)),
-                onPressed: () async {
-                  try {
-                    final response = await SupabaseSyncService.instance.signInWithGoogle();
-                    if (response != null && context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Logged in successfully! Downloading data...')));
-                      await SupabaseSyncService.instance.restoreDataFromSupabase();
+            if (isSyncLoading)
+              const Center(child: CircularProgressIndicator())
+            else
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: Colors.black,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  icon: const Icon(Icons.login),
+                  label: const Text('Sign in with Google', style: TextStyle(fontWeight: FontWeight.bold)),
+                  onPressed: () async {
+                    ref.read(syncLoadingProvider.notifier).setLoading(true);
+                    try {
+                      final response = await SupabaseSyncService.instance.signInWithGoogle();
+                      if (response != null && context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Logged in successfully! Downloading data...')));
+                        await SupabaseSyncService.instance.restoreDataFromSupabase();
+                        if (context.mounted) {
+                          ref.invalidate(taskProvider);
+                          ref.invalidate(workoutProvider);
+                          ref.invalidate(userProfileProvider);
+                          ref.invalidate(themeProvider);
+                        }
+                      }
+                    } catch (e) {
                       if (context.mounted) {
-                        ref.invalidate(taskProvider);
-                        ref.invalidate(workoutProvider);
-                        ref.invalidate(userProfileProvider);
-                        ref.invalidate(themeProvider);
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                          content: Text('Sign in failed: $e'),
+                          backgroundColor: Colors.red,
+                          duration: const Duration(seconds: 5),
+                        ));
+                      }
+                    } finally {
+                      if (context.mounted) {
+                        ref.read(syncLoadingProvider.notifier).setLoading(false);
                       }
                     }
-                  } catch (e) {
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                        content: Text('Sign in failed: $e'),
-                        backgroundColor: Colors.red,
-                        duration: const Duration(seconds: 5),
-                      ));
-                    }
-                  }
-                },
+                  },
+                ),
               ),
-            ),
           ] else ...[
             Text('Signed in as:\n${user.email}', style: const TextStyle(color: Colors.white70)),
             const SizedBox(height: 16),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.blue.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.blue.withOpacity(0.3)),
-              ),
-              child: const Row(
-                children: [
-                   Icon(Icons.check_circle, color: Colors.blueAccent, size: 20),
-                   SizedBox(width: 8),
-                   Expanded(
-                     child: Text(
-                       'Your data is automatically synced to the cloud.',
-                       style: TextStyle(color: Colors.blueAccent),
+            if (isSyncLoading) ...[
+              const Center(child: CircularProgressIndicator(color: Colors.blueAccent)),
+              const SizedBox(height: 8),
+              const Center(child: Text('Downloading data...', style: TextStyle(color: Colors.blueAccent))),
+            ] else ...[
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.blue.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.blue.withOpacity(0.3)),
+                ),
+                child: const Row(
+                  children: [
+                     Icon(Icons.check_circle, color: Colors.blueAccent, size: 20),
+                     SizedBox(width: 8),
+                     Expanded(
+                       child: Text(
+                         'Your data is automatically synced to the cloud.',
+                         style: TextStyle(color: Colors.blueAccent),
+                       ),
                      ),
-                   ),
-                ],
+                  ],
+                ),
               ),
-            ),
-            const SizedBox(height: 16),
-            TextButton(
-              onPressed: () => SupabaseSyncService.instance.signOut(),
-              child: const Text('Sign out', style: TextStyle(color: Colors.redAccent)),
-            )
+              const SizedBox(height: 16),
+              TextButton(
+                onPressed: () => SupabaseSyncService.instance.signOut(),
+                child: const Text('Sign out', style: TextStyle(color: Colors.redAccent)),
+              )
+            ]
           ]
         ],
       ),
@@ -275,14 +298,43 @@ class ProfileScreen extends ConsumerWidget {
             children: [
               ListTile(
                 leading: const Icon(Icons.info, color: Colors.blue),
-                title: const Text('About FitDev'),
+                title: const Text('About LifeTrack'),
                 onTap: () {
                   Navigator.pop(context);
                   showDialog(
                     context: context,
                     builder: (context) => AlertDialog(
                       title: const Text('About'),
-                      content: const Text('FitDev\nVersion 1.0.1\nDeveloped to help you track your fitness and daily tasks.'),
+                      content: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          const Text(
+                            'LifeTrack\nVersion 1.0.1\nDeveloped to help you track your fitness and daily tasks.\n',
+                            textAlign: TextAlign.center,
+                          ),
+                          const Text('Developer: Tanish Sarkar', style: TextStyle(fontWeight: FontWeight.bold)),
+                          const SizedBox(height: 16),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              IconButton(
+                                icon: const FaIcon(FontAwesomeIcons.linkedin, color: Colors.blueAccent, size: 36),
+                                onPressed: () {
+                                  launchUrl(Uri.parse('https://www.linkedin.com/in/tanish-sarkar28/'), mode: LaunchMode.externalApplication);
+                                },
+                              ),
+                              const SizedBox(width: 24),
+                              IconButton(
+                                icon: const FaIcon(FontAwesomeIcons.github, size: 36),
+                                onPressed: () {
+                                  launchUrl(Uri.parse('https://github.com/tanishsarkar28'), mode: LaunchMode.externalApplication);
+                                },
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                       actions: [
                         TextButton(onPressed: () => Navigator.pop(context), child: const Text('Close'))
                       ],

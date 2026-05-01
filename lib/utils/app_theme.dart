@@ -1,6 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../providers/data_providers.dart';
+
+enum AppThemeType {
+  midnightBlack,
+  forestGreen,
+  neonCyberpunk,
+  darkBlue,
+}
 
 class AppTheme {
   static ThemeData getTheme(AppThemeType type) {

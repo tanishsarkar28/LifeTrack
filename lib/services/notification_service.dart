@@ -4,49 +4,22 @@ import 'package:timezone/timezone.dart' as tz;
 import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 import 'dart:ui';
 import 'dart:isolate';
+import 'package:hive_flutter/hive_flutter.dart';
 import '../models/task_model.dart';
 
 class NotificationService {
   static final FlutterLocalNotificationsPlugin _notificationsPlugin = FlutterLocalNotificationsPlugin();
-
-  static void _addWaterTaskToHive() async {
-    if (!Hive.isBoxOpen('tasks')) {
-      await Hive.openBox<TaskModel>('tasks');
-    }
-    final box = Hive.box<TaskModel>('tasks');
-    final task = TaskModel(
-      id: 'water_${DateTime.now().millisecondsSinceEpoch}',
-      title: 'Drink Water',
-      date: DateTime.now(),
-      isCustom: true,
-    )..isCompleted = true;
-    await box.put(task.id, task);
-  }
+  static ReceivePort? _receivePort;
 
   static void onNotificationTapped(NotificationResponse response) {
-    if (response.payload == 'water_reminder' && response.actionId == 'drank_water') {
-      _addWaterTaskToHive();
-    }
+    // Handle foreground taps if needed
   }
 
   @pragma('vm:entry-point')
   static void onBackgroundNotificationTapped(NotificationResponse response) async {
-    if (response.payload == 'water_reminder' && response.actionId == 'drank_water') {
-      final SendPort? sendPort = IsolateNameServer.lookupPortByName('water_task_port');
-      if (sendPort != null) {
-        sendPort.send('drank_water');
-      } else {
-        WidgetsFlutterBinding.ensureInitialized();
-        await Hive.initFlutter();
-        if (!Hive.isAdapterRegistered(0)) { // Assuming TaskModelAdapter is 0, wait, better use proper initialization
-          Hive.registerAdapter(TaskModelAdapter());
-        }
-        _addWaterTaskToHive();
-      }
-    }
+    // Handle background taps if needed
   }
 
   static Future<void> initialize() async {
@@ -59,13 +32,16 @@ class NotificationService {
       if (kDebugMode) print('Could not get local timezone');
     }
 
+    _receivePort = ReceivePort();
+    IsolateNameServer.removePortNameMapping('water_task_port');
+    IsolateNameServer.registerPortWithName(_receivePort!.sendPort, 'water_task_port');
+
     const AndroidInitializationSettings androidInitializationSettings = AndroidInitializationSettings('@mipmap/launcher_icon');
     
     const InitializationSettings initializationSettings = InitializationSettings(
       android: androidInitializationSettings,
     );
 
-    // changed to named argument.
     await _notificationsPlugin.initialize(
       settings: initializationSettings,
       onDidReceiveNotificationResponse: onNotificationTapped,
@@ -85,7 +61,7 @@ class NotificationService {
     List<AndroidNotificationAction>? actions,
     String? payload,
   }) async {
-    final AndroidNotificationDetails androidNotificationDetails = AndroidNotificationDetails(
+    AndroidNotificationDetails androidNotificationDetails = AndroidNotificationDetails(
       'daily_task_channel',
       'Daily Task Reminders',
       channelDescription: 'Reminders for your scheduled daily tasks',
@@ -94,7 +70,7 @@ class NotificationService {
       actions: actions,
     );
 
-    final NotificationDetails notificationDetails = NotificationDetails(android: androidNotificationDetails);
+    NotificationDetails notificationDetails = NotificationDetails(android: androidNotificationDetails);
 
     final tz.TZDateTime now = tz.TZDateTime.now(tz.local);
     tz.TZDateTime scheduledDate = tz.TZDateTime(tz.local, now.year, now.month, now.day, hour, minute);
@@ -116,18 +92,14 @@ class NotificationService {
   }
 
   static Future<void> scheduleWaterReminderNotifications() async {
-    const waterReminderTimes = [9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20];
-    const actions = [
-      AndroidNotificationAction('drank_water', 'Yes, drank 250ml', showsUserInterface: true),
-    ];
+    const waterReminderTimes = [9, 11, 13, 15, 17, 19, 21, 23];
     for (var i = 0; i < waterReminderTimes.length; i++) {
       await scheduleDailyTaskNotification(
         id: 1000 + i,
         title: 'Hydration Reminder',
-        body: 'Drink 250 ml of water (1 glass) to keep your 3L goal on track.',
+        body: 'Drink some water and keep your 2L goal on track.',
         hour: waterReminderTimes[i],
         minute: 0,
-        actions: actions,
         payload: 'water_reminder',
       );
     }

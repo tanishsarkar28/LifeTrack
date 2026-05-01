@@ -46,6 +46,9 @@ dependencies:
   flutter_timezone: ^5.0.2
   supabase_flutter: ^2.5.4
   google_sign_in: ^6.2.1
+  url_launcher: ^6.3.2
+  font_awesome_flutter: ^10.9.1
+  flutter_secure_storage: ^10.0.0
 
 dev_dependencies:
   flutter_test:

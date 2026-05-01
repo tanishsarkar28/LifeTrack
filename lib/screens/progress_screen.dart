@@ -67,22 +67,18 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen> {
     
     final days = List.generate(daysCount, (index) => DateTime(monthStart.year, monthStart.month, index + 1));
     
-    int activeDaysThisMonth = 0;
-    double totalProgressThisMonth = 0.0;
-    for (var day in days) {
-      final progress = progressHistory[day] ?? 0.0;
-      if (progress > 0) {
-        activeDaysThisMonth++;
-        totalProgressThisMonth += progress;
-      }
-    }
-    
     final offset = monthStart.weekday - 1; // Monday=1
     final trailing = (7 - (offset + days.length) % 7) % 7;
     
-    final averageCompletion = activeDaysThisMonth == 0
+    final currentMonthProgress = progressHistory.entries.where((entry) {
+      return entry.key.year == selectedMonth.year && entry.key.month == selectedMonth.month;
+    }).toList();
+
+    final trackedDaysCount = currentMonthProgress.length;
+
+    final averageCompletion = trackedDaysCount == 0
         ? 0.0
-        : totalProgressThisMonth / activeDaysThisMonth;
+        : currentMonthProgress.map((e) => e.value).reduce((a, b) => a + b) / trackedDaysCount;
 
     return Scaffold(
       appBar: AppBar(
@@ -98,8 +94,8 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Theme.of(context).cardColor, Theme.of(context).canvasColor],
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF151B36), Color(0xFF1F2545)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
@@ -149,7 +145,7 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen> {
             const SizedBox(height: 16),
             Row(
               children: [
-                _buildSummaryCard('Tracked Days', '$activeDaysThisMonth'),
+                _buildSummaryCard('Tracked Days', '$trackedDaysCount'),
                 const SizedBox(width: 12),
                 _buildSummaryCard('Average', '${(averageCompletion * 100).round()}%'),
               ],
@@ -157,7 +153,7 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen> {
             const SizedBox(height: 18),
             const Text('Completion Calendar', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 12),
-            _buildLegend(context),
+            _buildLegend(),
             const SizedBox(height: 16),
             _buildWeekHeader(context),
             const SizedBox(height: 8),
@@ -186,7 +182,7 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen> {
                   ),
                   itemBuilder: (context, index) {
                     if (index < offset || index >= offset + days.length) {
-                      return _buildEmptyTile(context);
+                      return _buildEmptyTile();
                     }
                     final day = days[index - offset];
                     final progress = progressHistory[day];
@@ -211,8 +207,8 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen> {
         duration: const Duration(milliseconds: 400),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Theme.of(context).canvasColor, Theme.of(context).cardColor],
+          gradient: const LinearGradient(
+            colors: [Color(0xFF23283A), Color(0xFF1A1E2F)],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -254,24 +250,24 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen> {
     );
   }
 
-  Widget _buildLegend(BuildContext context) {
+  Widget _buildLegend() {
     return Wrap(
       spacing: 8,
       runSpacing: 8,
       children: [
-        _buildLegendChip(context, Colors.green, '90-100%'),
-        _buildLegendChip(context, Colors.lightGreen, '65-89%'),
-        _buildLegendChip(context, Colors.orange, '35-64%'),
-        _buildLegendChip(context, Colors.red, '0-34%'),
+        _buildLegendChip(Colors.green, '90-100%'),
+        _buildLegendChip(Colors.lightGreen, '65-89%'),
+        _buildLegendChip(Colors.orange, '35-64%'),
+        _buildLegendChip(Colors.red, '0-34%'),
       ],
     );
   }
 
-  Widget _buildLegendChip(BuildContext context, Color color, String label) {
+  Widget _buildLegendChip(Color color, String label) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: Theme.of(context).canvasColor,
+        color: const Color(0xFF1A1A28),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: Colors.white12),
       ),
@@ -290,19 +286,27 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen> {
     );
   }
 
-  Widget _buildEmptyTile(BuildContext context) {
+  Widget _buildEmptyTile() {
     return Container(
       decoration: BoxDecoration(
-        color: Theme.of(context).scaffoldBackgroundColor,
+        color: const Color(0xFF10121A),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: Colors.white12),
       ),
     );
   }
 
+  List<String> _getGroupedTasks(List<String> tasks) {
+    final Map<String, int> counts = {};
+    for (final task in tasks) {
+      counts[task] = (counts[task] ?? 0) + 1;
+    }
+    return counts.entries.map((e) => e.value > 1 ? '${e.key} x ${e.value}' : e.key).toList();
+  }
+
   Widget _buildDayTile(BuildContext context, DateTime day, double? progress, Map<String, dynamic>? details, List<TaskModel> currentTasks, List<dynamic> workouts, bool workoutIncluded, bool isToday) {
     final bgColor = progress == null
-        ? Theme.of(context).canvasColor
+        ? const Color(0xFF22222E)
         : progress >= 0.9
             ? Colors.green
             : progress >= 0.65
@@ -369,22 +373,27 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen> {
     late final int totalCount;
     late final List<String> incompleteTasks;
     late final List<String> completedTasks;
+    late final int waterCompleted;
 
     if (isToday) {
       completedTasks = currentTasks.where((t) => t.isCompleted).map((t) => t.title).toList();
       incompleteTasks = currentTasks.where((t) => !t.isCompleted).map((t) => t.title).toList();
       completedCount = completedTasks.length;
       totalCount = currentTasks.length;
+      final waterTasks = currentTasks.where((t) => t.title.toLowerCase().contains('water')).toList();
+      waterCompleted = waterTasks.where((t) => t.isCompleted).length;
     } else if (details != null) {
       completedCount = details['completedCount'] as int? ?? 0;
       totalCount = details['totalCount'] as int? ?? 0;
       completedTasks = List<String>.from(details['completedTitles'] as List? ?? []);
       incompleteTasks = List<String>.from(details['incompleteTitles'] as List? ?? []);
+      waterCompleted = details['waterCompleted'] as int? ?? 0;
     } else {
       completedCount = 0;
       totalCount = 0;
       completedTasks = [];
       incompleteTasks = [];
+      waterCompleted = 0;
     }
 
     final dayWorkouts = workouts.where((w) {
@@ -403,32 +412,36 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen> {
           title: Text(DateFormat.yMMMMd().format(day)),
           content: SizedBox(
             width: double.maxFinite,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Completed tasks: $completedCount / $totalCount'),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Expanded(child: Text('Workout counts toward calendar: ${workoutIncluded ? 'Yes' : 'No'}')),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                if (dayWorkouts.isNotEmpty) ...[
-                  Text('Workout entries: ${dayWorkouts.length}', style: const TextStyle(fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 8),
-                ],
-                if (incompleteTasks.isNotEmpty) ...[
-                  const Text('Incomplete tasks:', style: TextStyle(fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 8),
-                  ...incompleteTasks.map(
-                    (title) => Text('• $title', style: const TextStyle(fontSize: 13)),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Completed tasks: $completedCount / $totalCount'),
+                  const SizedBox(height: 12),
+                  Text('Water intake: ${waterCompleted.clamp(0, 8)} / 8 glasses' + (waterCompleted < 8 ? ' (${8 - waterCompleted} missed)' : ' (Goal Met!)')),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(child: Text('Workout counts toward calendar: ${workoutIncluded ? 'Yes' : 'No'}')),
+                    ],
                   ),
-                ] else ...[
-                  const Text('No incomplete tasks recorded.'),
+                  const SizedBox(height: 12),
+                  if (dayWorkouts.isNotEmpty) ...[
+                    Text('Workout entries: ${dayWorkouts.length}', style: const TextStyle(fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 8),
+                  ],
+                  if (incompleteTasks.isNotEmpty) ...[
+                    const Text('Incomplete tasks:', style: TextStyle(fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 8),
+                    ..._getGroupedTasks(incompleteTasks).map(
+                      (title) => Text('• $title', style: const TextStyle(fontSize: 13)),
+                    ),
+                  ] else ...[
+                    const Text('No incomplete tasks recorded.'),
+                  ],
                 ],
-              ],
+              ),
             ),
           ),
           actions: [
