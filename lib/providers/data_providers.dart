@@ -155,16 +155,16 @@ class TaskNotifier extends Notifier<List<TaskModel>> {
     final settingsBox = Hive.box('settings');
     final boxWorkout = Hive.box<WorkoutModel>('workouts');
     final dateOnly = DateTime(date.year, date.month, date.day);
-    final completedTasks = tasks.where((t) => t.isCompleted).map((t) => t.title).toList();
-    final incompleteTasks = tasks.where((t) => !t.isCompleted).map((t) => t.title).toList();
-    final completedCount = completedTasks.length;
-    final totalCount = tasks.length;
-    final taskProgress = totalCount == 0 ? 0.0 : completedCount / totalCount;
+    
+    final generalTasks = tasks.where((t) => !t.title.toLowerCase().contains('water')).toList();
+    final completedCount = generalTasks.where((t) => t.isCompleted).length;
+    final totalCount = generalTasks.length;
+    final taskProgress = totalCount == 0 ? -1.0 : completedCount / totalCount;
 
     final waterTasks = tasks.where((t) => t.title.toLowerCase().contains('water')).toList();
     final waterCompleted = waterTasks.where((t) => t.isCompleted).length;
     final waterTotal = waterTasks.length;
-    final waterProgress = waterTotal == 0 ? 0.0 : waterCompleted / waterTotal;
+    final waterProgress = waterTotal == 0 ? null : waterCompleted / waterTotal;
 
     final workoutTasks = boxWorkout.values.where((w) {
       final day = DateTime(w.date.year, w.date.month, w.date.day);
@@ -172,16 +172,31 @@ class TaskNotifier extends Notifier<List<TaskModel>> {
     }).toList();
     final workoutCompleted = workoutTasks.where((w) => w.isCompleted).length;
     final workoutTotal = workoutTasks.length;
-    final workoutProgress = workoutTotal == 0 ? 0.0 : workoutCompleted / workoutTotal;
+    final workoutProgress = workoutTotal == 0 ? null : workoutCompleted / workoutTotal;
 
-    settingsBox.put(_progressKey(dateOnly), taskProgress);
-    settingsBox.put(_waterProgressKey(dateOnly), waterProgress);
-    settingsBox.put(_workoutProgressKey(dateOnly), workoutProgress);
+    if (taskProgress >= 0 || waterProgress != null || workoutProgress != null) {
+      settingsBox.put(_progressKey(dateOnly), taskProgress);
+    } else {
+      settingsBox.delete(_progressKey(dateOnly));
+    }
+    
+    if (waterProgress != null) {
+      settingsBox.put(_waterProgressKey(dateOnly), waterProgress);
+    } else {
+      settingsBox.delete(_waterProgressKey(dateOnly));
+    }
+    
+    if (workoutProgress != null) {
+      settingsBox.put(_workoutProgressKey(dateOnly), workoutProgress);
+    } else {
+      settingsBox.delete(_workoutProgressKey(dateOnly));
+    }
+
     settingsBox.put(_progressDetailsKey(dateOnly), {
-      'completedCount': completedCount,
-      'totalCount': totalCount,
-      'completedTitles': completedTasks,
-      'incompleteTitles': incompleteTasks,
+      'completedCount': tasks.where((t) => t.isCompleted).length,
+      'totalCount': tasks.length,
+      'completedTitles': tasks.where((t) => t.isCompleted).map((t) => t.title).toList(),
+      'incompleteTitles': tasks.where((t) => !t.isCompleted).map((t) => t.title).toList(),
       'waterCompleted': waterCompleted,
       'waterTotal': waterTotal,
       'workoutCompleted': workoutCompleted,
@@ -404,7 +419,10 @@ final taskProgressProvider = Provider<Map<DateTime, double>>((ref) {
           final workoutValue = settingsBox.get(_workoutProgressKey(dateOnly));
           final bool workoutEnabled = settingsBox.get(_workoutCalendarIncludeKey(dateOnly)) as bool? ?? true;
 
-          final values = <double>[taskProgress];
+          final values = <double>[];
+          if (taskProgress >= 0) {
+            values.add(taskProgress);
+          }
           if (waterValue is num) {
             values.add(waterValue.toDouble());
           }
@@ -421,26 +439,37 @@ final taskProgressProvider = Provider<Map<DateTime, double>>((ref) {
 
   final now = DateTime.now();
   final today = DateTime(now.year, now.month, now.day);
-  final todayTasks = tasks.where((t) => DateTime(t.date.year, t.date.month, t.date.day) == today).toList();
-  if (todayTasks.isNotEmpty) {
-    final completedTaskCount = todayTasks.where((t) => t.isCompleted).length;
-    final taskProgress = todayTasks.isEmpty ? 0.0 : completedTaskCount / todayTasks.length;
-    final waterTasks = todayTasks.where((t) => t.title.toLowerCase().contains('water')).toList();
-    final waterCompleted = waterTasks.where((t) => t.isCompleted).length;
-    final waterProgress = waterTasks.isEmpty ? 0.0 : waterCompleted / waterTasks.length;
+  
+  final generalTasks = tasks.where((t) => !t.title.toLowerCase().contains('water')).toList();
+  final waterTasks = tasks.where((t) => t.title.toLowerCase().contains('water')).toList();
+  
+  final todayWorkouts = workouts.where((w) {
+    final dateOnly = DateTime(w.date.year, w.date.month, w.date.day);
+    return dateOnly == today;
+  }).toList();
+  
+  final workoutEnabled = workoutInclusion[today] ?? true;
 
-    final todayWorkouts = workouts.where((w) {
-      final dateOnly = DateTime(w.date.year, w.date.month, w.date.day);
-      return dateOnly == today;
-    }).toList();
-    final workoutCompleted = todayWorkouts.where((w) => w.isCompleted).length;
-    final workoutProgress = todayWorkouts.isEmpty ? 0.0 : workoutCompleted / todayWorkouts.length;
-    final workoutEnabled = workoutInclusion[today] ?? true;
-
-    final values = <double>[taskProgress];
-    if (waterTasks.isNotEmpty) values.add(waterProgress);
-    if (workoutEnabled && todayWorkouts.isNotEmpty) values.add(workoutProgress);
-    history[today] = (values.reduce((a, b) => a + b) / values.length).clamp(0.0, 1.0);
+  if (generalTasks.isNotEmpty || waterTasks.isNotEmpty || todayWorkouts.isNotEmpty) {
+    final values = <double>[];
+    
+    if (generalTasks.isNotEmpty) {
+      final completedGeneral = generalTasks.where((t) => t.isCompleted).length;
+      values.add(completedGeneral / generalTasks.length);
+    }
+    
+    if (waterTasks.isNotEmpty) {
+      final waterCompleted = waterTasks.where((t) => t.isCompleted).length;
+      values.add(waterCompleted / waterTasks.length);
+    }
+    
+    if (workoutEnabled && todayWorkouts.isNotEmpty) {
+      final workoutCompleted = todayWorkouts.where((w) => w.isCompleted).length;
+      values.add(workoutCompleted / todayWorkouts.length);
+    }
+    
+    final combined = values.isNotEmpty ? values.reduce((a, b) => a + b) / values.length : 0.0;
+    history[today] = combined.clamp(0.0, 1.0);
   }
 
   return history;

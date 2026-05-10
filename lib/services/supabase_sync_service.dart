@@ -128,12 +128,23 @@ class SupabaseSyncService {
     final settingsMap = <String, dynamic>{};
     for (var key in settingsBox.keys) {
       if (key is String) {
-        settingsMap[key] = settingsBox.get(key);
+        final value = settingsBox.get(key);
+        settingsMap[key] = _makeJsonSafe(value);
       }
     }
     data['settings'] = settingsMap;
 
     return data;
+  }
+
+  // Recursively ensure data is JSON-safe (converts non-string keys to strings, etc.)
+  dynamic _makeJsonSafe(dynamic value) {
+    if (value is Map) {
+      return value.map((k, v) => MapEntry(k.toString(), _makeJsonSafe(v)));
+    } else if (value is List) {
+      return value.map((e) => _makeJsonSafe(e)).toList();
+    }
+    return value;
   }
 
   // Upload data silently

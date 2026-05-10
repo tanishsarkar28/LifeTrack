@@ -223,10 +223,14 @@ class ProfileScreen extends ConsumerWidget {
                         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Logged in successfully! Downloading data...')));
                         await SupabaseSyncService.instance.restoreDataFromSupabase();
                         if (context.mounted) {
+                          // Invalidate all providers to force a UI refresh with restored data
                           ref.invalidate(taskProvider);
                           ref.invalidate(workoutProvider);
                           ref.invalidate(userProfileProvider);
                           ref.invalidate(themeProvider);
+                          ref.invalidate(workoutCalendarInclusionProvider);
+                          ref.invalidate(taskProgressProvider);
+                          ref.invalidate(taskProgressDetailsProvider);
                         }
                       }
                     } catch (e) {

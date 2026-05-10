@@ -374,6 +374,7 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen> {
     late final List<String> incompleteTasks;
     late final List<String> completedTasks;
     late final int waterCompleted;
+    late final int waterTotal;
 
     if (isToday) {
       completedTasks = currentTasks.where((t) => t.isCompleted).map((t) => t.title).toList();
@@ -382,18 +383,21 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen> {
       totalCount = currentTasks.length;
       final waterTasks = currentTasks.where((t) => t.title.toLowerCase().contains('water')).toList();
       waterCompleted = waterTasks.where((t) => t.isCompleted).length;
+      waterTotal = waterTasks.length;
     } else if (details != null) {
       completedCount = details['completedCount'] as int? ?? 0;
       totalCount = details['totalCount'] as int? ?? 0;
       completedTasks = List<String>.from(details['completedTitles'] as List? ?? []);
       incompleteTasks = List<String>.from(details['incompleteTitles'] as List? ?? []);
       waterCompleted = details['waterCompleted'] as int? ?? 0;
+      waterTotal = details['waterTotal'] as int? ?? 8;
     } else {
       completedCount = 0;
       totalCount = 0;
       completedTasks = [];
       incompleteTasks = [];
       waterCompleted = 0;
+      waterTotal = 8;
     }
 
     final dayWorkouts = workouts.where((w) {
@@ -419,7 +423,7 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen> {
                 children: [
                   Text('Completed tasks: $completedCount / $totalCount'),
                   const SizedBox(height: 12),
-                  Text('Water intake: ${waterCompleted.clamp(0, 8)} / 8 glasses' + (waterCompleted < 8 ? ' (${8 - waterCompleted} missed)' : ' (Goal Met!)')),
+                  Text('Water intake: ${waterCompleted.clamp(0, waterTotal)} / $waterTotal glasses' + (waterCompleted < waterTotal ? ' (${waterTotal - waterCompleted} missed)' : ' (Goal Met!)')),
                   const SizedBox(height: 12),
                   Row(
                     children: [
