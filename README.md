@@ -1,4 +1,4 @@
-markdown_content = """# LifeTrack 🚀
+# LifeTrack 🚀
 
 **LifeTrack** is a comprehensive, all-in-one lifestyle and productivity tracking application built with **Flutter** and **Supabase**. Designed to help you stay on top of your daily routines, LifeTrack allows you to manage tasks, log workouts, monitor your diet, track coding progress, and earn achievements—all from a single, intuitive dashboard.
 
