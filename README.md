@@ -9,8 +9,6 @@
 * **📊 Comprehensive Dashboard:** Get a bird's-eye view of your daily progress, upcoming tasks, and overall stats.
 * **✅ To-Do & Task Management:** Organize your day efficiently with a built-in task tracker.
 * **🏋️‍♂️ Workout Tracker:** Log your exercises with visual guidance (includes integrated workout GIFs like push-ups, planks, squats, and more).
-* **🥗 Diet & Meal Logging:** Keep track of your daily nutrition, meals, and caloric intake.
-* **💻 Coding Progress:** Track your programming hours, projects, and development streaks.
 * **📈 Progress & Achievements:** Stay motivated with gamified achievements and visual progress tracking.
 * **☁️ Cloud Syncing:** Real-time data synchronization across devices using **Supabase**.
 * **🔔 Notifications:** Stay on track with built-in reminder notifications.
