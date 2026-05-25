@@ -56,6 +56,7 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen> {
   Widget build(BuildContext context) {
     final currentTasks = ref.watch(taskProvider);
     final workouts = ref.watch(workoutProvider);
+    final streak = ref.watch(streakProvider);
     final progressHistory = ref.watch(taskProgressProvider);
     final progressDetails = ref.watch(taskProgressDetailsProvider);
     final workoutInclusion = ref.watch(workoutCalendarInclusionProvider);
@@ -150,6 +151,42 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen> {
                 _buildSummaryCard('Average', '${(averageCompletion * 100).round()}%'),
               ],
             ),
+            Container(
+  padding: const EdgeInsets.all(16),
+  margin: const EdgeInsets.symmetric(vertical: 12),
+  decoration: BoxDecoration(
+    color: Colors.orange.withOpacity(0.15),
+    borderRadius: BorderRadius.circular(16),
+  ),
+  child: Row(
+    children: [
+      const Text(
+        '🔥',
+        style: TextStyle(fontSize: 28),
+      ),
+      const SizedBox(width: 12),
+      Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Current Streak',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          Text(
+            '$streak Days',
+            style: const TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+      ),
+    ],
+  ),
+),
             const SizedBox(height: 18),
             const Text('Completion Calendar', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 12),

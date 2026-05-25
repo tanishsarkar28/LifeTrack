@@ -349,29 +349,7 @@ class WorkoutNotifier extends Notifier<List<WorkoutModel>> {
 }
 
 // Score Logic
-final streakProvider = Provider<int>((ref) {
-  final progressHistory = ref.watch(taskProgressProvider);
-  int streak = 0;
-  DateTime today = DateTime.now();
-  DateTime checkDate = DateTime(today.year, today.month, today.day);
-  
-  if ((progressHistory[checkDate] ?? 0.0) > 0) {
-    streak++;
-    checkDate = checkDate.subtract(const Duration(days: 1));
-    while ((progressHistory[checkDate] ?? 0.0) > 0) {
-      streak++;
-      checkDate = checkDate.subtract(const Duration(days: 1));
-    }
-  } else {
-    checkDate = checkDate.subtract(const Duration(days: 1));
-    while ((progressHistory[checkDate] ?? 0.0) > 0) {
-      streak++;
-      checkDate = checkDate.subtract(const Duration(days: 1));
-    }
-  }
-  
-  return streak;
-});
+
 
 final dailyScoreProvider = Provider<int>((ref) {
   final tasks = ref.watch(taskProvider);
@@ -381,6 +359,29 @@ final dailyScoreProvider = Provider<int>((ref) {
   int score = ((completedCount / tasks.length) * 100).round();
   
   return score > 100 ? 100 : score;
+});
+final streakProvider = Provider<int>((ref) {
+  final progressHistory = ref.watch(taskProgressProvider);
+
+  int streak = 0;
+
+  DateTime currentDay = DateTime.now();
+
+  currentDay = DateTime(
+    currentDay.year,
+    currentDay.month,
+    currentDay.day,
+  );
+
+  while ((progressHistory[currentDay] ?? 0.0) > 0) {
+    streak++;
+
+    currentDay = currentDay.subtract(
+      const Duration(days: 1),
+    );
+  }
+
+  return streak;
 });
 
 final taskProgressProvider = Provider<Map<DateTime, double>>((ref) {
